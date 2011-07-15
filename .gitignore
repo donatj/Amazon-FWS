@@ -1,0 +1,8 @@
+Local/
+
+#Windows Files
+Thumbs.db
+
+#MacOS Files
+.DS_Store
+._*
