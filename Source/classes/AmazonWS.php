@@ -58,10 +58,33 @@ abstract class AmazonWS {
 		return $arr1;
 	}
 	
-	protected function make_request( $opts ) {
-		$url = $this->build_request_url( $opts );
-		header('Content-type: text/xml');
-		echo $this->exec_request( $url );
+	/**
+	* Makes the request and parses it for errors
+	* 
+	* @param mixed $opts
+	* @return DOMDocument|bool
+	*/
+	protected function make_request( $opts, &$xml = false ) {
+		$url = $this->build_request_url( $opts );		
+		$xml = $this->exec_request( $url );
+		
+		if( stripos( $xml, '<?xml' ) === false ) { 
+			trigger_error('Amazon WS Response Not Well Formed XML'); 
+			return false;
+		}
+		$doc = new DOMDocument();
+		$doc->loadXML( $xml );
+		
+		$errors = $doc->getElementsByTagName('ErrorResponse');
+		if( $errors->length > 0 ) {
+			foreach( $errors as $error ) {
+				trigger_error( $error->getElementsByTagName('Code')->item(0)->nodeValue . ': ' . $error->getElementsByTagName('Message')->item(0)->nodeValue );
+			}
+			return false;
+		}
+		
+		return $doc;
+		
 	}
 	
 	protected function build_request_url( $opts ) {
@@ -90,8 +113,7 @@ abstract class AmazonWS {
 
 		curl_close($ch);
 		
-		echo $data;
-		//return file_get_contents( $url );
+		return $data;
 	}
 
 	static function date_format( $timestamp ) {
