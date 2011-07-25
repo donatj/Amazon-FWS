@@ -2,6 +2,8 @@
 	
 abstract class AmazonWS {
 	
+	const ERR_BAD_XML = 100, ERR_THROTTLE = 150, ERR_OTHER = 1000;
+	
 	protected $aws_access_key_id, $aws_seller_id, $aws_marketplace_id, $aws_secret_access_key;
 	public $last_request, $last_response;
 	
@@ -71,14 +73,14 @@ abstract class AmazonWS {
 		$xml = $this->exec_request( $url );
 		
 		if( stripos( $xml, '<?xml' ) === false ) { 
-			trigger_error('Amazon WS Response Not Well Formed XML'); 
+			throw new Exception('Amazon WS Response Not Well Formed XML', self::ERR_BAD_XML);
 			return false;
 		}
 		$doc = new SimpleXMLElement( $xml );
 		
-		if( $error = $doc->Error ) {
-				trigger_error( $error->Type . ' - ' . $error->Code . ': ' . $error->Message );
-				return false;
+		if( $error = $doc->Error ) {			
+			throw new Exception( $error->Type . ' - ' . $error->Code . ': ' . $error->Message, stripos($error->Code, 'Throttled') !== false ? self::ERR_THROTTLE : self::ERR_OTHER );
+			return false;
 		}
 		
 		return $doc;
