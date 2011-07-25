@@ -11,7 +11,7 @@ if( file_exists('Local/configure.php') ) {
 require('Source/classes/AmazonFWS.php');
 
 $afws = new AmazonFWS( AWS_ACCESS_KEY_ID, AWS_SELLER_ID, AWS_MARKETPLACE_ID, AWS_SECRET_ACCESS_KEY );
-$threedaysago = strtotime('5 days ago');
+$threedaysago = strtotime('3 days ago');
 //$afws->ListOrders(array('CreatedAfter' => J_AmazonWS::date_format($threedaysago) ));
 //$afws->GetOrder(array('104-0016898-0766635'));
 $afws->GetOrder(array('104-0016898-0766635', '103-6094405-3751416'));
