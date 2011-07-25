@@ -28,19 +28,23 @@ class AmazonFWS extends AmazonWS {
 	* Calls the ListOrders action.
 	* @see https://images-na.ssl-images-amazon.com/images/G/01/mwsportal/doc/en_US/orders/MWSOrdersApiReference._V170791601_.pdf#page=7
 	*/
-	public function ListOrders( $opts ) {
-		$opts = $this->merge( $opts, array('Action' => 'ListOrders') );
+	public function ListOrders( $opts, $parentElm = 'ListOrdersResult' ) {
+		$opts = $this->merge( array('Action' => 'ListOrders'), $opts );
 		$doc  = $this->make_request($opts, $xml);
 		
 		if( $doc ) {
 			$data = array();
-			$data['Response'] = $doc->ListOrdersResult->Orders;
-			if( $doc->ListOrdersResult->NextToken ) {
-				$data['NextToken'] = $doc->ListOrdersResult->NextToken;
+			$data['Response'] = $doc->$parentElm->Orders;
+			if( $doc->$parentElm->NextToken ) {
+				$data['NextToken'] = (string)$doc->$parentElm->NextToken;
 			}
-			print_r( $data );
+			return $data;
 		}
-		
+		return false;
+	}
+	
+	public function ListOrdersByNextToken( $next_token ) {
+		return $this->ListOrders(array('Action' => 'ListOrdersByNextToken', 'NextToken' => $next_token ), 'ListOrdersByNextTokenResult');
 	}
 	
 	public function ListOrderItems( $AmazonOrderId, $opts = array() ) {
