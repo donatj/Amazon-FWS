@@ -30,7 +30,17 @@ class AmazonFWS extends AmazonWS {
 	*/
 	public function ListOrders( $opts ) {
 		$opts = $this->merge( $opts, array('Action' => 'ListOrders') );
-		$this->make_request($opts);
+		$doc  = $this->make_request($opts, $xml);
+		
+		if( $doc ) {
+			$data = array();
+			$data['Response'] = $doc->ListOrdersResult->Orders;
+			if( $doc->ListOrdersResult->NextToken ) {
+				$data['NextToken'] = $doc->ListOrdersResult->NextToken;
+			}
+			print_r( $data );
+		}
+		
 	}
 	
 	public function ListOrderItems( $AmazonOrderId, $opts = array() ) {

@@ -62,7 +62,8 @@ abstract class AmazonWS {
 	* Makes the request and parses it for errors
 	* 
 	* @param mixed $opts
-	* @return DOMDocument|bool
+	* @param mixed $xml
+	* @return SimpleXMLElement|bool
 	*/
 	protected function make_request( $opts, &$xml = false ) {
 		$url = $this->build_request_url( $opts );		
@@ -72,15 +73,11 @@ abstract class AmazonWS {
 			trigger_error('Amazon WS Response Not Well Formed XML'); 
 			return false;
 		}
-		$doc = new DOMDocument();
-		$doc->loadXML( $xml );
+		$doc = new SimpleXMLElement( $xml );
 		
-		$errors = $doc->getElementsByTagName('ErrorResponse');
-		if( $errors->length > 0 ) {
-			foreach( $errors as $error ) {
-				trigger_error( $error->getElementsByTagName('Code')->item(0)->nodeValue . ': ' . $error->getElementsByTagName('Message')->item(0)->nodeValue );
-			}
-			return false;
+		if( $error = $doc->Error ) {
+				trigger_error( $error->Type . ' - ' . $error->Code . ': ' . $error->Message );
+				return false;
 		}
 		
 		return $doc;
