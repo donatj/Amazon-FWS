@@ -3,6 +3,7 @@
 abstract class AmazonWS {
 	
 	protected $aws_access_key_id, $aws_seller_id, $aws_marketplace_id, $aws_secret_access_key;
+	public $last_request, $last_response;
 	
 	protected 
 		$host       = 'mws.amazonservices.com',
@@ -109,6 +110,9 @@ abstract class AmazonWS {
 		$data = curl_exec($ch);
 
 		curl_close($ch);
+		
+		$this->last_request  = $url;
+		$this->last_response = $data;
 		
 		return $data;
 	}
