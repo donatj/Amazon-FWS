@@ -30,26 +30,36 @@ class AmazonFWS extends AmazonWS {
 	*/
 	public function ListOrders( $opts, $parentElm = 'ListOrdersResult' ) {
 		$opts = $this->merge( array('Action' => 'ListOrders'), $opts );
-		$doc  = $this->make_request($opts, $xml);
+		$doc  = $this->make_request($opts);
 		
 		if( $doc ) {
-			$data = array();
-			$data['Response'] = $doc->$parentElm->Orders;
-			if( $doc->$parentElm->NextToken ) {
-				$data['NextToken'] = (string)$doc->$parentElm->NextToken;
-			}
-			return $data;
+			return $this->_structure_document_response( $doc, $parentElm, 'Orders' ) ;
 		}
 		return false;
 	}
 	
 	public function ListOrdersByNextToken( $next_token ) {
-		return $this->ListOrders(array('Action' => 'ListOrdersByNextToken', 'NextToken' => $next_token ), 'ListOrdersByNextTokenResult');
+		return $this->ListOrders(array('Action' => 'ListOrdersByNextToken', 'NextToken' => $next_token), 'ListOrdersByNextTokenResult');
 	}
 	
-	public function ListOrderItems( $AmazonOrderId, $opts = array() ) {
-		$opts = $this->merge( $opts, array( 'AmazonOrderId' => $AmazonOrderId, 'Action' => 'ListOrderItems') );
-		$this->make_request($opts);
+	
+	/**
+	* Calls the ListOrders action.
+	* @see https://images-na.ssl-images-amazon.com/images/G/01/mwsportal/doc/en_US/orders/MWSOrdersApiReference._V170791601_.pdf#page=22
+	*/
+	public function ListOrderItems( $AmazonOrderId, $opts = array(), $parentElm = '' ) {
+		if( $AmazonOrderId !== false ) { $opts['AmazonOrderId'] = $AmazonOrderId; }
+		$opts = $this->merge( array( 'Action' => 'ListOrderItems'), $opts );
+		$doc = $this->make_request($opts);
+		
+		if( $doc ) {
+			return $this->_structure_document_response( $doc, 'ListOrderItemsResult', 'OrderItems' ) ;
+		}
+		return false;
+	}
+	
+	public function ListOrderItemsByNextToken( $next_token ) {
+		return $this->ListOrderItems(false, array('Action' => 'ListOrderItemsByNextToken', 'NextToken' => $next_token), 'ListOrderItemsByNextTokenResult');
 	}
 	
 	public function GetOrder( $AmazonOrderIds, $opts = array() ) {
@@ -67,6 +77,13 @@ class AmazonFWS extends AmazonWS {
 		$opts = $this->merge( $opts, $_params );
 		//print_r( $opts ); die();
 		$this->make_request($opts);
+	}
+	
+	private function _structure_document_response( $doc, $parentElm, $grouping_elm ) {
+		$data = array();
+		$data['Response'] = $doc->$parentElm->$grouping_elm;
+		if( $doc->$parentElm->NextToken ) { $data['NextToken'] = (string)$doc->$parentElm->NextToken; }
+		return $data;
 	}
 	
 }
