@@ -75,8 +75,12 @@ class AmazonFWS extends AmazonWS {
 		}
 		
 		$opts = $this->merge( $opts, $_params );
-		//print_r( $opts ); die();
-		$this->make_request($opts);
+		$doc = $this->make_request($opts, $xml);
+		
+		if( $doc ) {
+			return $this->_structure_document_response( $doc, 'GetOrderResult', 'Orders' );
+		}
+		return false;
 	}
 	
 	private function _structure_document_response( $doc, $parentElm, $grouping_elm ) {
